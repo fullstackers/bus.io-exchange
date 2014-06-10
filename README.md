@@ -3,10 +3,13 @@
 [![David DM](https://david-dm.org/turbonetix/bus.io-exchange.png)](https://david-dm.org/nathangromano/bus.io.png)
 
 ![Bus.IO](https://raw.github.com/turbonetix/bus.io/master/logo.png)
-A **[bus.io](https://www.npmjs.org/package/bus.io "Bus.io")** dependency.  This was forked from **[socket-messages](https://www.npmjs.org/package/socket-messages "socket-messages")**
+A **[bus.io](https://www.npmjs.org/package/bus.io "Bus.io")** dependency.
 
-The goal of this library is to wrap-up **[kue](https://www.npmjs.org/package/kue "Kue")** and **[redis] (https://www.npmjs.org/package/redis "Redis")** and provide a simple interface for building event driven applications.  
-At a high-level the library will read messages off of a queue, attempt to handle them, and in some cases publish those events back out onto the pubsub (redis).
+This was forked from **[socket-messages](https://www.npmjs.org/package/socket-messages "socket-messages")**
+
+The goal of this library is to wrap-up **[kue](https://www.npmjs.org/package/kue "Kue")** and **[redis] (https://www.npmjs.org/package/redis "Redis")** 
+and provide a simple interface for building event driven applications.  At a high-level the library will read messages off of a queue, attempt to 
+handle them, and in some cases publish those events back out onto the pubsub (redis).
 
 # Installation and Environment Setup
 
@@ -113,7 +116,7 @@ var exchange = Exchange(Exchange.Queue(), Exchange.PubSub());
 
 ```
 
-### Exchagne#make(queue:Queue, pubsub:Pubsub, handler:EventEmitter)
+### Exchange#make(queue:Queue, pubsub:Pubsub, handler:EventEmitter)
 
 ```javascript
 
