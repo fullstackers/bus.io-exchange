@@ -1,5 +1,5 @@
 {
-  "name": "message-exchange",
+  "name": "bus.io-exchagne",
   "version": "0.1.1",
   "description": "integrates redis as a queue and a pubsub by providing an easy mechanism for publishing and handling messages",
   "main": "index.js",
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:nathangromano/message-exchange.git"
+    "url": "git@github.com:turbonetix/bus.io-exchange.git"
   },
   "keywords": [
     "redis",
@@ -24,9 +24,9 @@
   "author": "Nathan G. Romano <nathan.g.romano@gmail.com>",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nathangromano/message-exchange/issues"
+    "url": "https://github.com/turbonetix/bus.io-exchange/issues"
   },
-  "homepage": "https://github.com/nathangromano/message-exchange",
+  "homepage": "https://github.com/turbonetix/bus.io-exchange",
   "devDependencies": {
     "grunt-jasmine-bundle": "^0.2.0",
     "grunt-cli": "^0.1.13",

@@ -1,5 +1,7 @@
-[![Build Status](https://travis-ci.org/NathanGRomano/message-exchange.svg?branch=master)](https://travis-ci.org/NathanGRomano/message-exchange.git)
-[![NPM version](https://badge.fury.io/js/message-exchange.svg)](http://badge.fury.io/js/message-exchange)
+[![Build Status](https://travis-ci.org/turbonetix/bus.io-exchange.svg?branch=master)](https://travis-ci.org/turbonetix/bus.io-exchange.git)
+[![NPM version](https://badge.fury.io/js/bus.io-exchange.svg)](http://badge.fury.io/js/bus.io-exchange)
+
+A **[bus.io](https://www.npmjs.org/package/bus.io "Bus.io")** dependency.  This was forked from **[bus.io](https://www.npmjs.org/package/socket-messages "socket-messages")**
 
 The goal of this library is to wrap-up **[kue](https://www.npmjs.org/package/kue "Kue")** and **[redis] (https://www.npmjs.org/package/redis "Redis")** and provide a simple interface for building event driven applications.  
 At a high-level the library will read messages off of a queue, attempt to handle them, and in some cases publish those events back out onto the pubsub (redis).
@@ -16,11 +18,11 @@ Install coffee-script
 
 Clone this repository
 
-    > git clone git@github.com:NathanGRomano/message-exchange.git
+    > git clone git@github.com:turbonetix/bus.io-exchange.git
 
 cd into the directory and install the dependencies
 
-    > cd message-exchange
+    > cd bus.io-exchange
     > npm install && npm shrinkwrap --dev
 
 # Examples
@@ -32,7 +34,7 @@ First we get an exchage instance
 ```javascript
 
 var events = require('events');
-var exchange = require('message-exchange').make();
+var exchange = require('bus.io-exchange')();
 
 ```
 
@@ -86,21 +88,30 @@ exchange.publish({
 You can put anything you like into an event.  I just like to follow a convention similar to what you saw.
 Make sure you have the **required field "action"** in your event.
 
-# API Documentation
+# API
 
 ## Exchange
 
 This is wheere we publish, handle, and propagate messages.
 
-### #make()
+### Exchange#()
 
 ```javascript
 
-var exchange = require('message-exchange').make();
+var exchange = require('bus.io-exchange')();
 
 ```
 
-### #make(queue:Queue, pubsub:Pubsub, handler:EventEmitter)
+### Exchange#(queue:Queue, pubsub:Pubsub, handler:EventEmitter)
+
+```javascript
+
+var Exchange = require('bus.io-exchange');
+var exchange = Exchange(Exchange.Queue(), Exchange.PubSub());
+
+```
+
+### Exchagne#make(queue:Queue, pubsub:Pubsub, handler:EventEmitter)
 
 ```javascript
 
@@ -114,7 +125,7 @@ var exchange = messageExchange.make(queue, pubsub, handler);
 
 ```
 
-### #publish(message:Object)
+### Exchange#publish(message:Object)
 
 Puts the message onto the `Queue`.
 
@@ -131,7 +142,7 @@ exchange.publish( message );
 
 ```
 
-### #publish(message:Object, channel:String)
+### Exchange#publish(message:Object, channel:String)
 
 Puts the message onto the `PubSub` with the `channel` being `"everyone"`.
 
@@ -148,7 +159,7 @@ exchange.publish( message, 'everyone' );
 
 ```
 
-### #channel(channel:String)
+### Exchange#channel(channel:String)
 
 Gets a channel instance, if it doesn't already exist it will subscribe to that
 channel.
@@ -162,7 +173,7 @@ channel.on('message', function (message) {
 
 ```
 
-### #queue()
+### Exchange#queue()
 
 Gets the `Queue` instance.
 
@@ -173,7 +184,7 @@ queue.send(message);
 
 ```
 
-### #queue(queue:Queue)
+### Exchange#queue(queue:Queue)
 
 Sets the `Queue` instance.
 
@@ -186,7 +197,7 @@ exchange.queue(queue);
 
 ```
 
-### #pubsub()
+### Exchange#pubsub()
 
 Gets the pubsub instance.
 
@@ -197,7 +208,7 @@ pubsub.send(message, 'everyone');
 
 ```
 
-### #pubsub(pubsub:PubSub)
+### Exchange#pubsub(pubsub:PubSub)
 
 Sets the pubsub instance.
 
@@ -214,7 +225,7 @@ exchange.pubsub(pubsub);
 
 ```
 
-### #handler()
+### Exchange#handler()
 
 Gets the handler which is an `EventEmitter`.
 
@@ -228,7 +239,7 @@ handler.on('some message', function (message, exchange) {
 
 ```
 
-### #handler(handler:EventEmitter)
+### Exchange#handler(handler:EventEmitter)
 
 Sets the handler.
 
@@ -261,4 +272,4 @@ To run the tests, just run grunt
 # TODO
 
 * Support different queues
-* ~~~allow for easier configuration of redis~~~
+* Support different pubsubs
