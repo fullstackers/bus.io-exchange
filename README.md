@@ -1,7 +1,7 @@
 [![Build Status](https://travis-ci.org/turbonetix/bus.io-exchange.svg?branch=master)](https://travis-ci.org/turbonetix/bus.io-exchange.git)
 [![NPM version](https://badge.fury.io/js/bus.io-exchange.svg)](http://badge.fury.io/js/bus.io-exchange)
 
-A **[bus.io](https://www.npmjs.org/package/bus.io "Bus.io")** dependency.  This was forked from **[bus.io](https://www.npmjs.org/package/socket-messages "socket-messages")**
+A **[bus.io](https://www.npmjs.org/package/bus.io "Bus.io")** dependency.  This was forked from **[socket-messages](https://www.npmjs.org/package/socket-messages "socket-messages")**
 
 The goal of this library is to wrap-up **[kue](https://www.npmjs.org/package/kue "Kue")** and **[redis] (https://www.npmjs.org/package/redis "Redis")** and provide a simple interface for building event driven applications.  
 At a high-level the library will read messages off of a queue, attempt to handle them, and in some cases publish those events back out onto the pubsub (redis).
