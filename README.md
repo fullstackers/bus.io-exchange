@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/turbonetix/bus.io-exchange.svg?branch=master)](https://travis-ci.org/turbonetix/bus.io-exchange.git)
 [![NPM version](https://badge.fury.io/js/bus.io-exchange.svg)](http://badge.fury.io/js/bus.io-exchange)
-[![David DM](https://david-dm.org/turbonetix/bus.io-exchange.png)](https://david-dm.org/nathangromano/bus.io.png)
+[![David DM](https://david-dm.org/turbonetix/bus.io-exchange.png)](https://david-dm.org/turbonetix/bus.io-exchange.png)
 
 ![Bus.IO](https://raw.github.com/turbonetix/bus.io/master/logo.png)
 
