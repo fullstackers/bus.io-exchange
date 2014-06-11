@@ -1,6 +1,6 @@
 {
   "name": "bus.io-exchange",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Integrates Redis as a queue and a pubsub by providing an easy mechanism for publishing and handling messages",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "producer"
   ],
   "author": "Nathan G. Romano <nathan.g.romano@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/turbonetix/bus.io-exchange/issues"
   },
