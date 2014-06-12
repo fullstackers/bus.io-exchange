@@ -128,23 +128,23 @@ describe 'Exchange', ->
 
       Given -> @channel = 'name'
       Given -> @listener = ->
-      Given -> @cb = jasmine.createSpy()
+      Given -> @cb = jasmine.createSpy('cb')
       Given -> spyOn(@p,['subscribe']).andCallThrough()
       Given -> spyOn(@instance, 'addListener').andCallThrough()
       When -> @instance.subscribe @channel, @listener, @cb
       Then -> expect(@p.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
       And -> expect(@instance.addListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
-      And -> expect(@cb).toHaveBeenCalled()
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
 
     describe '#unsubscribe (channe:String, listener:Function, cb:Function)', ->
 
       Given -> @channel = 'name'
       Given -> @listener = ->
       Given -> @instance.subscribe @channel, @listener, ->
-      Given -> @cb = jasmine.createSpy()
+      Given -> @cb = jasmine.createSpy('cb')
       Given -> spyOn(@p,['unsubscribe']).andCallThrough()
       Given -> spyOn(@instance, 'removeListener').andCallThrough()
       When -> @instance.unsubscribe @channel, @listener, @cb
       Then -> expect(@p.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
       And -> expect(@instance.removeListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
-      And -> expect(@cb).toHaveBeenCalled()
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel

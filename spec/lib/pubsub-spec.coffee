@@ -37,7 +37,7 @@ describe 'PubSub', ->
       Given -> spyOn(@instance, ['emit']).andCallThrough()
       When -> @instance.subscribe @channel, @cb
       Then -> expect(@sub.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
-      And -> expect(@cb).toHaveBeenCalled()
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
       And -> expect(@instance.emit).toHaveBeenCalledWith 'subscribed ' + @channel
 
     describe '#unsubscribe', ->
@@ -48,6 +48,6 @@ describe 'PubSub', ->
       Given -> spyOn(@sub,['unsubscribe']).andCallThrough()
       When -> @instance.unsubscribe @channel, @cb
       Then -> expect(@sub.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
-      And -> expect(@cb).toHaveBeenCalled()
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
       And -> expect(@instance.emit).toHaveBeenCalledWith 'unsubscribed ' + @channel
 
