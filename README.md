@@ -117,7 +117,7 @@ var exchange = Exchange(Exchange.Queue(), Exchange.PubSub());
 
 ```javascript
 
-var messageExchange = require('message-exchange');
+var messageExchange = require('bus.io-exchange');
 
 var queue = messageExchange.Queue.make();
 var pubsub = messageExchange.PubSub.make();
