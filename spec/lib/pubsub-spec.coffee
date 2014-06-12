@@ -1,37 +1,53 @@
 EventEmitter = require('events').EventEmitter
 
-describe 'pubsub', ->
+describe 'PubSub', ->
 
-  Given -> @pubsub = require './../../lib/pubsub'
+  Given -> @Message = require('bus.io-common').Message
+
   Given ->
-    @pub = new EventEmitter
-    @pub.publish = (channel, message) ->
-  Given ->
-    @sub = new EventEmitter
-    @sub.subscribe = (channel) ->
+    @Redis = class Redis extends EventEmitter
+      publish: (c, m) ->
+      subscribe: (c, cb) -> cb()
+      unsubscribe: (c, cb) -> cb()
+    @Redis.createClient = -> new Redis
 
-  describe '#make', ->
+  Given -> @PubSub = requireSubject 'lib/pubsub', {
+    'redis': @Redis
+  }
 
-    When -> @res = @pubsub.make @pub, @sub
-    Then -> expect(typeof @res).toBe 'object'
-    And -> expect(@res instanceof @pubsub).toBe true
-    And -> expect(@res.pub).toEqual @pub
-    And -> expect(@res.sub).toEqual @sub
+  Given -> @pub = @Redis.createClient()
+  Given -> @sub = @Redis.createClient()
 
-  context 'an instance', ->
+  context 'prototoype', ->
 
-    Given -> @instance = @pubsub.make @pub, @sub
+    Given -> @instance = @PubSub @pub, @sub
     Given -> @channel = 'channel'
-    Given -> @message = encodeURIComponent(JSON.stringify(ok:1))
+    Given -> @message = @Message()
 
     describe '#send', ->
 
       Given -> spyOn(@pub,['publish']).andCallThrough()
-      When -> @instance.send @channel + ' ' + @message
-      Then -> expect(@pub.publish).toHaveBeenCalledWith @channel, @message
+      When -> @instance.send @message, @channel
+      Then -> expect(@pub.publish).toHaveBeenCalledWith @channel, encodeURIComponent(JSON.stringify(@message.data))
 
     describe '#subscribe', ->
+
+      Given -> @cb = jasmine.createSpy 'cb'
       Given -> spyOn(@sub,['subscribe']).andCallThrough()
-      When -> @instance.subscribe @channel
+      Given -> spyOn(@instance, ['emit']).andCallThrough()
+      When -> @instance.subscribe @channel, @cb
       Then -> expect(@sub.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
+      And -> expect(@instance.emit).toHaveBeenCalledWith 'subscribed ' + @channel
+
+    describe '#unsubscribe', ->
+
+      Given -> @instance.subscribe @channel, ->
+      Given -> @cb = jasmine.createSpy 'cb'
+      Given -> spyOn(@instance, ['emit']).andCallThrough()
+      Given -> spyOn(@sub,['unsubscribe']).andCallThrough()
+      When -> @instance.unsubscribe @channel, @cb
+      Then -> expect(@sub.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
+      And -> expect(@instance.emit).toHaveBeenCalledWith 'unsubscribed ' + @channel
 

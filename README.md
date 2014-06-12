@@ -27,69 +27,6 @@ cd into the directory and install the dependencies
     > cd bus.io-exchange
     > npm install && npm shrinkwrap --dev
 
-# Examples
-
-Here is how to create a simple application to handle an event and broadcast it back out.
-
-First we get an exchage instance
-
-```javascript
-
-var events = require('events');
-var exchange = require('bus.io-exchange')();
-
-```
-
-Lets initialize a model and setup a handler for a **quit** event
-
-```javascript
-
-var employeeModel = {hired: new Date()}:
-
-var handler = new events.EventEmitter()
-handler.on('quit', function (event) {
-
-  // handle the event
-  employeeModel.quit = event.created;
-
-  // let Human Resources know the employee quit 
-  exchange.channel('human resources').publish(event);
-
-});
-
-exchange.handler(handler);
-
-```
-
-When we handle a **quit** event we broadcast the messaage to the **human resources** channel.  So let add a listener on that channel so we can relay the information to say a socket.
-
-```javascript
-
-//presume we have declared sockets elsewhere
-
-exchange.channel('human resources').on('message', function (event) {
-  sockets.emit('message', event);
-});
-
-```
-
-Now lets publish a **quit** event the message queue.  It will be handled by our handler and then broadcast on our channel and finally broadcast to our sockets.
-
-```javascript
-
-exchange.publish({
-  actor:'employee', 
-  target:'job', 
-  action:'quit', 
-  created:new Date(), 
-  content:'work performed'
-});
-
-```
-
-You can put anything you like into an event.  I just like to follow a convention similar to what you saw.
-Make sure you have the **required field "action"** in your event.
-
 # API
 
 ## Exchange
@@ -117,13 +54,13 @@ var exchange = Exchange(Exchange.Queue(), Exchange.PubSub());
 
 ```javascript
 
-var messageExchange = require('bus.io-exchange');
+var Exchange = require('bus.io-exchange');
 
-var queue = messageExchange.Queue.make();
-var pubsub = messageExchange.PubSub.make();
+var queue = Exchange.Queue();
+var pubsub = Exchange.PubSub();
 var handler = new EventEmitter();
 
-var exchange = messageExchange.make(queue, pubsub, handler);
+var exchange = Exchange(queue, pubsub, handler);
 
 ```
 
@@ -133,14 +70,9 @@ Puts the message onto the `Queue`.
 
 ```javascript
 
-var message = {
-  actor: 'Me',
-  action: 'shout',
-  content: 'Hello',
-  target: 'You'
-};
+var Message = require('bus.io-common').Message;
 
-exchange.publish( message );
+exchange.publish( Message() );
 
 ```
 
@@ -150,30 +82,48 @@ Puts the message onto the `PubSub` with the `channel` being `"everyone"`.
 
 ```javascript
 
-var message = {
-  actor: 'Me',
-  action: 'shout',
-  content: 'Hello',
-  target: 'You'
-};
+var message = Message();
 
 exchange.publish( message, 'everyone' );
 
 ```
 
-### Exchange#channel(channel:String)
+### Exchange#subscribe(channel:String, listener:Function, cb:Function)
 
-Gets a channel instance, if it doesn't already exist it will subscribe to that
-channel.
+Subscribes a `listener` to the channel and invokes the callback when the
+channel as been subscribed.
 
 ```javascript 
 
-var channel = exchange.channel('everyone');
-channel.on('message', function (message) {
-  //do somethign
+exchange.subscribe('some channel', function listener (message) { 
+
+//this gets called when we receive a message on the channel
+
+}, function callback (err, channel) { 
+
+//this gets called when we subscribed to the channel
+
 });
 
 ```
+
+### Exchange#unsubscribe(channel:String, listener:Function, cb:Function)
+
+Unsubscribes the `listener` from the channel and invokes the callback when the
+listener as been unsubscribed.
+
+```javascript 
+
+var listener = function (message) { };
+
+exchange.unsubscribe('some channel', listener, function callback (err, channel) { 
+
+//this gets called when we unsubscribed from the channel
+
+});
+
+```
+
 
 ### Exchange#queue()
 
@@ -181,8 +131,8 @@ Gets the `Queue` instance.
 
 ```javascript
 
-var queue = exchange.queue();
-queue.send(message);
+var queue = Exchange.queue();
+queue.send(Message());
 
 ```
 
@@ -256,6 +206,98 @@ handler.on('some message', function (message, exchange) {
 });
 
 exchange.handler(handler);
+
+```
+
+## Queue
+
+The queue is a lightweight wrapper around an object that supports a 
+method `process(name, fn)`. Where `name` is a `String` and `fn` is a
+`Function`. It must also support the method `create(name, data)` where
+`name` is a `String` and `data` is an `Object`.  The return value of
+the `create` method must expose a function `done()`.  In our case
+we used the `Kue` library.  It is a really nice library for handling jobs.
+
+### Queue#()
+
+```javascript
+
+var queue = Exchange.Queue();
+
+```
+
+### Queue#(q:Object)
+
+```javascript
+
+var kue = require('kue');
+var queue = Exchange.Queue(kue.createQueue());
+
+```
+
+### Queue#send(mesage:Message)
+
+```javascript
+
+queue.send(Message());
+
+```
+
+## PubSub
+
+The pubusb is a lightweight wrapper around the `redis` module. You could
+pass in another object insead of the `redis` object. By making sure it
+supports these methods `subscribe(name,cb)`, `unsubscribe(name,cb)`,
+`publish(channel, data)`.
+
+### PubSub#()
+
+```javascript
+
+var pubsub = Exchange.PubSub();
+
+```
+
+### PubSub#(pub:Object, sub:Object)
+
+```javascript
+
+var pub = redis.createClient()
+  , sub = redis.createClient();
+
+var pubsub = Exchange.PubSub(pub, sub);
+
+```
+
+### PubSub#send(message:Message)
+
+```javascript
+
+var message = Message();
+
+pubsub.send(message, message.target());
+
+```
+
+### PubSub#subscribe(channel:String, cb:Function)
+
+```javascript
+
+pubsub.subscribe('channel', function (err, channel) {
+  if (err) throw err;
+  console.log('channel subscribed');
+});
+
+```
+
+### PubSub#unsubscribe(channel:String, cb:Function)
+
+```javascript
+
+pubsub.unsubscribe('channel', function (err, channel) {
+  if (err) throw err;
+  console.log('channel unsubscribed');
+});
 
 ```
 

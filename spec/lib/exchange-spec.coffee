@@ -1,17 +1,24 @@
 EventEmitter = require('events').EventEmitter
 
-describe 'exchange', ->
+describe 'Exchange', ->
+
+  Given -> @Message = require('bus.io-common').Message
 
   Given ->
     @Queue = class Queue extends EventEmitter
+      constructor: ->
+        if not (@ instanceof Queue)
+          return new Queue
       send: ->
-    @Queue.make = -> new Queue
 
   Given ->
     @PubSub = class PubSub extends EventEmitter
+      constructor: ->
+        if not (@ instanceof PubSub)
+          return new PubSub
       send: ->
-      subscribe: ->
-    @PubSub.make = -> new PubSub
+      subscribe: (c, cb) -> cb()
+      unsubscribe: (c, cb) -> cb()
 
   Given ->
     @Exchange = requireSubject 'lib/exchange', {
@@ -19,43 +26,40 @@ describe 'exchange', ->
       './pubsub': @PubSub
     }
 
-  Given -> @q = @Queue.make()
-  Given -> @p = @PubSub.make()
+  Given -> @q = @Queue()
+  Given -> @p = @PubSub()
   Given -> @h = new EventEmitter
 
   describe '#make', ->
 
-    When -> @res = @Exchange.make()
+    When -> @res = @Exchange()
     Then -> expect(typeof @res).toBe 'object'
     And -> expect(@res instanceof @Exchange).toBe true
 
-    context 'queue:Queue, pubsub:PubSub, handler:EventEmitter', ->
+    context '(queue:Queue, pubsub:PubSub, handler:EventEmitter)', ->
       
-      When -> @res = @Exchange.make @q, @p, @h
+      When -> @res = @Exchange @q, @p, @h
       Then -> expect(typeof @res).toBe 'object'
       And -> expect(@res instanceof @Exchange).toBe true
 
-  context 'an instance', ->
+  context 'prototype', ->
 
-    Given -> @instance = @Exchange.make @q, @p, @h
+    Given -> @instance = @Exchange @q, @p, @h
 
     describe '#publish', ->
+     
+      Given -> @message = @Message()
 
-      context 'message:Object, channel:String', ->
+      context '(message:Object, channel:String)', ->
+        Given -> @channel = 'channel'
         Given -> spyOn(@p,['send']).andCallThrough()
-        When -> @instance.publish ok:1, 'channel'
-        Then -> expect(@p.send).toHaveBeenCalledWith 'channel ' + encodeURIComponent(JSON.stringify(ok:1))
+        When -> @instance.publish @message, @channel
+        Then -> expect(@p.send).toHaveBeenCalledWith @message, @channel
 
-      context 'message:Object', ->
+      context '(message:Object)', ->
         Given -> spyOn(@q, ['send']).andCallThrough()
-        When -> @instance.publish ok:2
-        Then -> expect(@q.send).toHaveBeenCalledWith ok:2
-
-    describe '#channel', ->
-
-      When -> @res = @instance.channel 'channel'
-      Then -> expect(typeof @res).toBe 'object'
-      And -> expect(@res.id).toBe 'channel'
+        When -> @instance.publish @message
+        Then -> expect(@q.send).toHaveBeenCalledWith @message
 
     describe '#queue', ->
 
@@ -63,9 +67,9 @@ describe 'exchange', ->
       Then -> expect(@res instanceof @Queue).toBe true
       And -> expect(@res.listeners('message')[0]).toEqual @instance.onQueueMessage
 
-      context 'queue:Queue', ->
+      context '(queue:Queue)', ->
 
-        Given -> @q = @Queue.make()
+        Given -> @q = @Queue()
         Given -> @existing = @instance.queue()
         Given -> spyOn(@existing,['removeListener']).andCallThrough()
         Given -> spyOn(@q,['on']).andCallThrough()
@@ -81,9 +85,9 @@ describe 'exchange', ->
       Then -> expect(@res instanceof @PubSub).toBe true
       And -> expect(@res.listeners('message')[0]).toEqual @instance.onPubSubMessage
 
-      context 'pubsub:PubSub', ->
+      context '(pubsub:PubSub)', ->
 
-        Given -> @q = @PubSub.make()
+        Given -> @q = @PubSub()
         Given -> @existing = @instance.pubsub()
         Given -> spyOn(@existing,['removeListener']).andCallThrough()
         Given -> spyOn(@q,['on']).andCallThrough()
@@ -98,34 +102,49 @@ describe 'exchange', ->
       When -> @res = @instance.handler()
       Then -> expect(@res instanceof EventEmitter).toBe true
 
-      context 'handler:EventEmitter', ->
+      context '(handler:EventEmitter)', ->
 
         Given -> @handler = new EventEmitter
         When -> @res = @instance.handler(@handler).handler()
         Then -> expect(@res).toBe @handler
 
-    describe '#onQueueMessage message:Object', ->
+    describe '#onQueueMessage (message:Message)', ->
 
-      Given -> @message =
-        data:
-          actor: 'me'
-          action: 'shout'
-          content: 'hello'
-          target: 'you'
+      Given -> @message = @Message()
       Given -> @handler = @instance.handler()
       Given -> spyOn(@handler, ['emit']).andCallThrough()
       When -> @instance.onQueueMessage @message
-      Then -> expect(@handler.emit).toHaveBeenCalledWith @message.data.action, @message.data, @instance
+      Then -> expect(@handler.emit).toHaveBeenCalledWith @message.action(), @message, @instance
 
-    describe '#onPubSubMessage message:Object', ->
+    describe '#onPubSubMessage (message:Message)', ->
 
       Given -> @channel = 'channel'
-      Given -> @message =
-        data:
-          actor: 'me'
-          action: 'shout'
-          content: 'hello'
-          target: 'you'
+      Given -> @message = @Message()
       Given -> spyOn(@instance, ['emit']).andCallThrough()
-      When -> @instance.onPubSubMessage @channel + ' ' + encodeURIComponent(JSON.stringify(@message))
-      Then -> expect(@instance.emit).toHaveBeenCalledWith @channel, @message
+      When -> @instance.onPubSubMessage @channel, @message
+      Then -> expect(@instance.emit).toHaveBeenCalledWith 'channel ' + @channel, @message
+
+    describe '#subscribe (channe:String, listener:Function, cb:Function)', ->
+
+      Given -> @channel = 'name'
+      Given -> @listener = ->
+      Given -> @cb = jasmine.createSpy('cb')
+      Given -> spyOn(@p,['subscribe']).andCallThrough()
+      Given -> spyOn(@instance, 'addListener').andCallThrough()
+      When -> @instance.subscribe @channel, @listener, @cb
+      Then -> expect(@p.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@instance.addListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
+
+    describe '#unsubscribe (channe:String, listener:Function, cb:Function)', ->
+
+      Given -> @channel = 'name'
+      Given -> @listener = ->
+      Given -> @instance.subscribe @channel, @listener, ->
+      Given -> @cb = jasmine.createSpy('cb')
+      Given -> spyOn(@p,['unsubscribe']).andCallThrough()
+      Given -> spyOn(@instance, 'removeListener').andCallThrough()
+      When -> @instance.unsubscribe @channel, @listener, @cb
+      Then -> expect(@p.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@instance.removeListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
+      And -> expect(@cb).toHaveBeenCalledWith null, @channel
