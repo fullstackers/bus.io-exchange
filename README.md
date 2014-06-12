@@ -209,6 +209,98 @@ exchange.handler(handler);
 
 ```
 
+## Queue
+
+The queue is a lightweight wrapper around an object that supports a 
+method `process(name, fn)`. Where `name` is a `String` and `fn` is a
+`Function`. It must also support the method `create(name, data)` where
+`name` is a `String` and `data` is an `Object`.  The return value of
+the `create` method must expose a function `done()`.  In our case
+we used the `Kue` library.  It is a really nice library for handling jobs.
+
+### Queue#()
+
+```javascript
+
+var queue = Exchange.Queue();
+
+```
+
+### Queue#(q:Object)
+
+```javascript
+
+var kue = require('kue');
+var queue = Exchange.Queue(kue.createQueue());
+
+```
+
+### Queue#send(mesage:Message)
+
+```javascript
+
+queue.send(Message());
+
+```
+
+## PubSub
+
+The pubusb is a lightweight wrapper around the `redis` module. You could
+pass in another object insead of the `redis` object. By making sure it
+supports these methods `subscribe(name,cb)`, `unsubscribe(name,cb)`,
+`publish(channel, data)`.
+
+### PubSub#()
+
+```javascript
+
+var pubsub = Exchange.PubSub();
+
+```
+
+### PubSub#(pub:Object, sub:Object)
+
+```javascript
+
+var pub = redis.createClient()
+  , sub = redis.createClient();
+
+var pubsub = Exchange.PubSub(pub, sub);
+
+```
+
+### PubSub#send(message:Message)
+
+```javascript
+
+var message = Message();
+
+pubsub.send(message, message.target());
+
+```
+
+### PubSub#subscribe(channel:String, cb:Function)
+
+```javascript
+
+pubsub.subscribe('channel', function (err, channel) {
+  if (err) throw err;
+  console.log('channel subscribed');
+});
+
+```
+
+### PubSub#unsubscribe(channel:String, cb:Function)
+
+```javascript
+
+pubsub.unsubscribe('channel', function (err, channel) {
+  if (err) throw err;
+  console.log('channel unsubscribed');
+});
+
+```
+
 # Running Tests
 
 ## Unit Tests
