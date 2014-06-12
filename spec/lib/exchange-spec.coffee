@@ -1,6 +1,6 @@
 EventEmitter = require('events').EventEmitter
 
-describe.only 'Exchange', ->
+describe 'Exchange', ->
 
   Given -> @Message = require('bus.io-common').Message
 
@@ -17,8 +17,8 @@ describe.only 'Exchange', ->
         if not (@ instanceof PubSub)
           return new PubSub
       send: ->
-      subscribe: ->
-      unsubscribe: ->
+      subscribe: (c, cb) -> cb()
+      unsubscribe: (c, cb) -> cb()
 
   Given ->
     @Exchange = requireSubject 'lib/exchange', {
@@ -123,3 +123,28 @@ describe.only 'Exchange', ->
       Given -> spyOn(@instance, ['emit']).andCallThrough()
       When -> @instance.onPubSubMessage @channel, @message
       Then -> expect(@instance.emit).toHaveBeenCalledWith 'channel ' + @channel, @message
+
+    describe '#subscribe (channe:String, listener:Function, cb:Function)', ->
+
+      Given -> @channel = 'name'
+      Given -> @listener = ->
+      Given -> @cb = jasmine.createSpy()
+      Given -> spyOn(@p,['subscribe']).andCallThrough()
+      Given -> spyOn(@instance, 'addListener').andCallThrough()
+      When -> @instance.subscribe @channel, @listener, @cb
+      Then -> expect(@p.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@instance.addListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
+      And -> expect(@cb).toHaveBeenCalled()
+
+    describe '#unsubscribe (channe:String, listener:Function, cb:Function)', ->
+
+      Given -> @channel = 'name'
+      Given -> @listener = ->
+      Given -> @instance.subscribe @channel, @listener, ->
+      Given -> @cb = jasmine.createSpy()
+      Given -> spyOn(@p,['unsubscribe']).andCallThrough()
+      Given -> spyOn(@instance, 'removeListener').andCallThrough()
+      When -> @instance.unsubscribe @channel, @listener, @cb
+      Then -> expect(@p.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      And -> expect(@instance.removeListener).toHaveBeenCalledWith 'channel ' + @channel, @listener
+      And -> expect(@cb).toHaveBeenCalled()

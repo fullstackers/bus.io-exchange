@@ -1,6 +1,8 @@
 EventEmitter = require('events').EventEmitter
 
-describe 'queue', ->
+describe 'Queue', ->
+
+  Given -> @Message = require('bus.io-common').Message
 
   Given ->
     @Kue = class Kue extends EventEmitter
@@ -17,27 +19,20 @@ describe 'queue', ->
     'kue': @Kue
   }
 
-  describe '#make', ->
+  context 'prototype', ->
 
-    When -> @res = @Queue.make @client
-    Then -> expect(typeof @res).toBe 'object'
-    And -> expect(@res instanceof @Queue).toBe true
-    And -> expect(@res.q).toEqual @client
+    Given -> @instance = @Queue @client
+    Given -> @message = @Message()
 
-  context 'an instance', ->
-
-    Given -> @instance = @Queue.make @client
-    Given -> @message = data: action: 'action'
-
-    describe '#send', ->
+    describe '#send (message:Message)', ->
       Given -> spyOn(@client,['create']).andCallThrough()
       When -> @instance.send @message
       Then -> expect(@client.create).toHaveBeenCalledWith 'message', @message
 
-    describe '.q', ->
+    describe '#onMessage (message:Message)', ->
+      Given -> @cb = jasmine.createSpy 'done'
+      Given -> spyOn(@instance,['emit']).andCallThrough()
+      When -> @instance.onMessage @message, @cb
+      Then -> expect(@instance.emit).toHaveBeenCalled()
+      And -> expect(@cb).toHaveBeenCalled()
 
-      context 'receiving a message', ->
-        
-        Given -> spyOn(@instance,['emit']).andCallThrough()
-        When -> @instance.send @message
-        Then -> expect(@instance.emit).toHaveBeenCalledWith 'message', @message
