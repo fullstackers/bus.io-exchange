@@ -59,9 +59,22 @@ describe 'Exchange', ->
         Then -> expect(@p.send).toHaveBeenCalledWith @message, @channel
 
       context '(message:Object)', ->
-        Given -> spyOn(@q, ['send']).andCallThrough()
-        When -> @instance.publish @message
-        Then -> expect(@q.send).toHaveBeenCalledWith @message
+
+        context 'not already published', ->
+
+          Given -> spyOn(@q, ['send']).andCallThrough()
+          When -> @instance.publish @message
+          Then -> expect(@q.send).toHaveBeenCalledWith @message
+
+        context 'already published', ->
+
+          Given -> @message = @Message()
+          Given -> @message.data.published = new Date
+          Given -> spyOn(@q, ['send']).andCallThrough()
+          Given -> spyOn(@p, ['send']).andCallThrough()
+          When -> @instance.publish @message
+          Then -> expect(@q.send).not.toHaveBeenCalled()
+          And -> expect(@p.send).toHaveBeenCalledWith @message, @message.target()
 
     describe '#queue', ->
 

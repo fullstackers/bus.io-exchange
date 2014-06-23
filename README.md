@@ -66,7 +66,8 @@ var exchange = Exchange(queue, pubsub, handler);
 
 ### Exchange#publish(message:Object)
 
-Puts the message onto the `Queue`.
+Puts the message onto the `Queue` if the message has *not* already been published to the `Queue`.
+If the message has already been published to the `Queue` it will be published onto the `PubSub`.
 
 ```javascript
 
