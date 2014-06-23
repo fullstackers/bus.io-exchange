@@ -30,7 +30,9 @@ describe 'Exchange', ->
   Given -> @p = @PubSub()
   Given -> @h = new EventEmitter
 
-  describe '#make', ->
+  Then -> expect(typeof @Exchange).toBe 'function'
+
+  describe '#', ->
 
     When -> @res = @Exchange()
     Then -> expect(typeof @res).toBe 'object'
