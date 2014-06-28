@@ -1,6 +1,6 @@
 {
   "name": "bus.io-exchange",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Integrates Redis as a queue and a pubsub by providing an easy mechanism for publishing and handling messages",
   "main": "index.js",
   "scripts": {
@@ -42,6 +42,6 @@
     "debug": "^1.0.2"
   },
   "engines": {
-    "node": ">10.10 <0.12"
+    "node": ">0.10 <0.12"
   }
 }
