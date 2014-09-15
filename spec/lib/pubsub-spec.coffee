@@ -20,7 +20,8 @@ describe 'PubSub', ->
 
   context 'prototoype', ->
 
-    Given -> @instance = @PubSub @pub, @sub
+    Given -> @prefix = 'p'
+    Given -> @instance = @PubSub @pub, @sub, @prefix
     Given -> @channel = 'channel'
     Given -> @message = @Message()
 
