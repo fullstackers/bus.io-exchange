@@ -81,6 +81,7 @@ describe 'Exchange', ->
       When -> @res = @instance.queue()
       Then -> expect(@res instanceof @Queue).toBe true
       And -> expect(@res.listeners('message')[0]).toEqual @instance.onQueueMessage
+      And -> expect(@res.listeners('error')[0]).toEqual @instance.onError
 
       context '(queue:Queue)', ->
 
@@ -92,13 +93,16 @@ describe 'Exchange', ->
         Then -> expect(@res instanceof @Queue).toBe true
         And -> expect(@res).toEqual @q
         And -> expect(@existing.removeListener).toHaveBeenCalledWith 'message', @instance.onQueueMessage
+        And -> expect(@existing.removeListener).toHaveBeenCalledWith 'error', @instance.onError
         And -> expect(@q.on).toHaveBeenCalledWith 'message', @instance.onQueueMessage
+        And -> expect(@q.on).toHaveBeenCalledWith 'error', @instance.onError
 
     describe '#pubsub', ->
 
       When -> @res = @instance.pubsub()
       Then -> expect(@res instanceof @PubSub).toBe true
       And -> expect(@res.listeners('message')[0]).toEqual @instance.onPubSubMessage
+      And -> expect(@res.listeners('error')[0]).toEqual @instance.onError
 
       context '(pubsub:PubSub)', ->
 
@@ -110,7 +114,9 @@ describe 'Exchange', ->
         Then -> expect(@res instanceof @PubSub).toBe true
         And -> expect(@res).toEqual @q
         And -> expect(@existing.removeListener).toHaveBeenCalledWith 'message', @instance.onPubSubMessage
+        And -> expect(@existing.removeListener).toHaveBeenCalledWith 'error', @instance.onError
         And -> expect(@q.on).toHaveBeenCalledWith 'message', @instance.onPubSubMessage
+        And -> expect(@q.on).toHaveBeenCalledWith 'error', @instance.onError
 
     describe '#handler', ->
 
@@ -139,7 +145,14 @@ describe 'Exchange', ->
       When -> @instance.onPubSubMessage @channel, @message
       Then -> expect(@instance.emit).toHaveBeenCalledWith 'channel ' + @channel, @message
 
-    describe '#subscribe (channe:String, listener:Function, cb:Function)', ->
+    describe '#onError (err:Error)', ->
+
+      Given -> spyOn(@instance,'emit')
+      Given -> @err = new Error
+      When -> @instance.onError @err
+      Then -> expect(@instance.emit).toHaveBeenCalledWith 'error', @err
+
+    describe '#subscribe (channel:String, listener:Function, cb:Function)', ->
 
       Given -> @channel = 'name'
       Given -> @listener = ->
