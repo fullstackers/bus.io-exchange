@@ -28,8 +28,22 @@ describe 'PubSub', ->
     describe '#send', ->
 
       Given -> spyOn(@pub,['publish']).andCallThrough()
-      When -> @instance.send @message, @channel
-      Then -> expect(@pub.publish).toHaveBeenCalledWith @prefix + @channel, encodeURIComponent(JSON.stringify(@message.data))
+
+      context 'with prefix', ->
+
+        When -> @instance.send @message, @channel, @prefix
+        Then -> expect(@pub.publish).toHaveBeenCalledWith @prefix + @channel, encodeURIComponent(JSON.stringify(@message.data))
+
+      context 'without prefix (undefined) should give us the default prefix + channel', ->
+
+        When -> @instance.send @message, @channel
+        Then -> expect(@pub.publish).toHaveBeenCalledWith @prefix + @channel, encodeURIComponent(JSON.stringify(@message.data))
+
+      context 'with a blank prefix "" should publish to just the channel', ->
+
+        When -> @instance.send @message, @channel, ''
+        Then -> expect(@pub.publish).toHaveBeenCalledWith @channel, encodeURIComponent(JSON.stringify(@message.data))
+
 
     describe '#subscribe', ->
 
@@ -37,7 +51,7 @@ describe 'PubSub', ->
       Given -> spyOn(@sub,['subscribe']).andCallThrough()
       Given -> spyOn(@instance, ['emit']).andCallThrough()
       When -> @instance.subscribe @channel, @cb
-      Then -> expect(@sub.subscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      Then -> expect(@sub.subscribe).toHaveBeenCalledWith @prefix + @channel, jasmine.any(Function)
       And -> expect(@instance.emit).toHaveBeenCalledWith 'subscribed ' + @channel
 
     describe '#unsubscribe', ->
@@ -47,6 +61,6 @@ describe 'PubSub', ->
       Given -> spyOn(@instance, ['emit']).andCallThrough()
       Given -> spyOn(@sub,['unsubscribe']).andCallThrough()
       When -> @instance.unsubscribe @channel, @cb
-      Then -> expect(@sub.unsubscribe).toHaveBeenCalledWith @channel, jasmine.any(Function)
+      Then -> expect(@sub.unsubscribe).toHaveBeenCalledWith @prefix + @channel, jasmine.any(Function)
       And -> expect(@instance.emit).toHaveBeenCalledWith 'unsubscribed ' + @channel
 
