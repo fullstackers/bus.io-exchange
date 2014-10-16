@@ -29,7 +29,7 @@ describe 'PubSub', ->
 
       Given -> spyOn(@pub,['publish']).andCallThrough()
       When -> @instance.send @message, @channel
-      Then -> expect(@pub.publish).toHaveBeenCalledWith @channel, encodeURIComponent(JSON.stringify(@message.data))
+      Then -> expect(@pub.publish).toHaveBeenCalledWith @prefix + @channel, encodeURIComponent(JSON.stringify(@message.data))
 
     describe '#subscribe', ->
 
